@@ -11,8 +11,6 @@ df["Conso moyenne (MWh)"] = df["Conso moyenne (MWh)"].str.replace(",", ".").asty
 numeric_cols = df.select_dtypes(exclude="object").columns.to_list()
 
 categorical_cols = df.select_dtypes(include="object").columns.to_list()
-categorical_cols.append(None)
-
 
 st.title("Dashboard sur des données énergétiques !")
 st.caption("C'est la première fois que j'utilise streamlit, je vais m'entrainer en utilisant un fichier CSV recensant différentes variables permettant de réaliser une analyse complète.")
@@ -30,19 +28,30 @@ st.header("Analyse exploratoire des variables qualitatives")
 st.subheader(f"Différentes variables qualitatives issues du fichier : ")
 st.write(df.select_dtypes(include="object").columns)
 
-var_quali = st.selectbox("Choisi une variable quantitative",categorical_cols)
+var_quali = st.selectbox("Choisi une variable qualitative",categorical_cols)
 
 df_quali = df[var_quali].value_counts().reset_index()
-df_quali.columns = [var_quali, "count"]  # Renomme les colonnes pour plus de clarté
+df_quali.columns = [var_quali, "count"]
 
-fig_quali = px.pie(
-    data_frame=df_quali,
-    names=var_quali,
-    values="count", 
-    title=f"Répartition de la variable {var_quali}"
-)
+if len(df_quali) > 10:
+    df_quali_top10 = df_quali.sort_values("count", ascending=False).head(10)
 
-st.plotly_chart(fig_quali)
+    fig_quali = px.bar(
+        data_frame=df_quali_top10,
+        x=var_quali,
+        y="count",
+        title=f"Répartition du top 10 de la variable {var_quali}"
+    )
+    st.plotly_chart(fig_quali)
+
+else:
+    fig_quali = px.pie(
+        data_frame=df_quali,
+        names=var_quali,
+        values="count",
+        title=f"Répartition de la variable {var_quali}"
+    )
+    st.plotly_chart(fig_quali)
 
 
 var_x = st.selectbox("Choisi la variable en Abscisse",numeric_cols)
