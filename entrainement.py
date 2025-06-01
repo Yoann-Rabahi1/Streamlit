@@ -60,36 +60,22 @@ else:
 var_x = st.selectbox("Choisi la variable en Abscisse",df.columns)
 var_y = st.selectbox("Choisi la variable en Ordonnée ",df.columns)
 
-if var_x == "Année" and var_y == "Conso totale (MWh)":
-    df_grouped = df.groupby("Année")["Conso totale (MWh)"].sum().reset_index()
+def repartition(var_x, var_y):
+    df_grouped = df.groupby(var_x)[var_y].sum().reset_index()
 
     fig = px.bar(
         df_grouped,
-        x="Année",
-        y="Conso totale (MWh)",
-        title="Consommation totale par année",
-        labels={"Année": "Année", "Conso totale (MWh)": "Consommation (MWh)"},
+        x=var_x,
+        y=var_y,
+        title=f"{var_y} par {var_x}",
+        labels={var_x: var_x, var_y: var_y},
         text_auto=True,
-        color="Conso totale (MWh)"
+        color=var_y
     )
 
     st.plotly_chart(fig)
 
-elif var_x == "Année" and var_y == "Conso moyenne (MWh)":
-    df_grouped = df.groupby("Année")["Conso moyenne (MWh)"].sum().reset_index()
-
-    fig = px.bar(
-        df_grouped,
-        x="Année",
-        y="Conso moyenne (MWh)",
-        title="Consommation moyenne par année",
-        labels={"Année": "Année", "Conso moyenne (MWh)": "Consommation (MWh)"},
-        text_auto=True,
-        color="Conso moyenne (MWh)"
-    )
-
-    st.plotly_chart(fig)
-
+repartition(var_x, var_y)
 
 filtre_active = st.radio("Voulez-vous appliquer un filtre avec les variables qualitatives ? ",["Non","Oui"])
 
@@ -104,6 +90,9 @@ if filtre_active == "Oui":
         color=var_categorical,
         title=str(var_x) + " VS " + str(var_y)
     )
+    
+    st.plotly_chart(fig_1)
+
 
 else:
 
@@ -113,6 +102,3 @@ else:
         y = var_y,
         title=str(var_x) + " VS " + str(var_y)
     )
-
-st.plotly_chart(fig_1)
-
