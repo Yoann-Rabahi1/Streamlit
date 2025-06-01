@@ -62,43 +62,40 @@ var_y = st.selectbox("Choisi la variable en Ordonnée ",df.columns)
 
 def repartition(var_x, var_y):
     df_grouped = df.groupby(var_x)[var_y].sum().reset_index()
+    nb_modalite =df_grouped[var_x].nunique()
 
-    fig = px.bar(
+    if  nb_modalite <= 6 :
+        fig = px.pie(
         df_grouped,
-        x=var_x,
-        y=var_y,
-        title=f"{var_y} par {var_x}",
-        labels={var_x: var_x, var_y: var_y},
-        text_auto=True,
-        color=var_y
+        names=var_x,
+        values=var_y,
+        title=f" Repartition de {var_y} selon {var_x}",
+        
     )
+    
+
+    elif 6 <= nb_modalite <= 15 :
+        fig = px.bar(
+            df_grouped,
+            x=var_x,
+            y=var_y,
+            title=f"{var_y} par {var_x}",
+            labels={var_x: var_x, var_y: var_y},
+            text_auto=True,
+            color=var_y
+        )
+
+
+    else:
+    
+        fig = px.line(
+            df_grouped,
+            x=var_x,
+            y=var_y,
+            title=f"{var_y} par {var_x}",
+            labels={var_x: var_x, var_y: var_y}
+        )
 
     st.plotly_chart(fig)
 
 repartition(var_x, var_y)
-
-filtre_active = st.radio("Voulez-vous appliquer un filtre avec les variables qualitatives ? ",["Non","Oui"])
-
-if filtre_active == "Oui":
-    
-    var_categorical = st.selectbox("Choisi la couleur en fonction des variables qualitatives", categorical_cols)
-
-    fig_1 = px.bar(
-        data_frame = df,
-        x = var_x,
-        y = var_y,
-        color=var_categorical,
-        title=str(var_x) + " VS " + str(var_y)
-    )
-    
-    st.plotly_chart(fig_1)
-
-
-else:
-
-    fig_1 = px.bar(
-        data_frame = df,
-        x = var_x,
-        y = var_y,
-        title=str(var_x) + " VS " + str(var_y)
-    )
