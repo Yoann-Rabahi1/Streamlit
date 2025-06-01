@@ -8,9 +8,12 @@ df = pd.read_csv("consoelecgaz2024.csv",sep="\t")
 df["Conso totale (MWh)"] = df["Conso totale (MWh)"].str.replace(",", ".").astype(float)
 df["Conso moyenne (MWh)"] = df["Conso moyenne (MWh)"].str.replace(",", ".").astype(float)
 
+df["Code Région"] = df["Code Région"].astype(object)
 numeric_cols = df.select_dtypes(exclude="object").columns.to_list()
 
 categorical_cols = df.select_dtypes(include="object").columns.to_list()
+
+
 
 st.title("Dashboard sur des données énergétiques !")
 st.caption("C'est la première fois que j'utilise streamlit, je vais m'entrainer en utilisant un fichier CSV recensant différentes variables permettant de réaliser une analyse complète.")
@@ -54,21 +57,62 @@ else:
     st.plotly_chart(fig_quali)
 
 
-var_x = st.selectbox("Choisi la variable en Abscisse",numeric_cols)
-var_y = st.selectbox("Choisi la variable en Ordonnée ",numeric_cols)
+var_x = st.selectbox("Choisi la variable en Abscisse",df.columns)
+var_y = st.selectbox("Choisi la variable en Ordonnée ",df.columns)
+
+if var_x == "Année" and var_y == "Conso totale (MWh)":
+    df_grouped = df.groupby("Année")["Conso totale (MWh)"].sum().reset_index()
+
+    fig = px.bar(
+        df_grouped,
+        x="Année",
+        y="Conso totale (MWh)",
+        title="Consommation totale par année",
+        labels={"Année": "Année", "Conso totale (MWh)": "Consommation (MWh)"},
+        text_auto=True,
+        color="Conso totale (MWh)"
+    )
+
+    st.plotly_chart(fig)
+
+elif var_x == "Année" and var_y == "Conso moyenne (MWh)":
+    df_grouped = df.groupby("Année")["Conso moyenne (MWh)"].sum().reset_index()
+
+    fig = px.bar(
+        df_grouped,
+        x="Année",
+        y="Conso moyenne (MWh)",
+        title="Consommation moyenne par année",
+        labels={"Année": "Année", "Conso moyenne (MWh)": "Consommation (MWh)"},
+        text_auto=True,
+        color="Conso moyenne (MWh)"
+    )
+
+    st.plotly_chart(fig)
 
 
+filtre_active = st.radio("Voulez-vous appliquer un filtre avec les variables qualitatives ? ",["Non","Oui"])
 
-var_categorical = st.selectbox("Choisi la couleur en fonction des variables qualitatives", categorical_cols)
+if filtre_active == "Oui":
+    
+    var_categorical = st.selectbox("Choisi la couleur en fonction des variables qualitatives", categorical_cols)
 
+    fig_1 = px.bar(
+        data_frame = df,
+        x = var_x,
+        y = var_y,
+        color=var_categorical,
+        title=str(var_x) + " VS " + str(var_y)
+    )
 
-fig_1 = px.bar(
-    data_frame = df,
-    x = var_x,
-    y = var_y,
-    color=var_categorical,
-    title=str(var_x) + " VS " + str(var_y)
-)
+else:
+
+    fig_1 = px.bar(
+        data_frame = df,
+        x = var_x,
+        y = var_y,
+        title=str(var_x) + " VS " + str(var_y)
+    )
 
 st.plotly_chart(fig_1)
 
